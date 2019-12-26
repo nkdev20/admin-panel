@@ -3,6 +3,10 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class CustomAuth
 {
@@ -15,25 +19,20 @@ class CustomAuth
      */
     public function handle($request, Closure $next)
     {
+      
+        $token = $request->header('Authorization');
 
-        $token = $this->auth->setRequest($request)->getToken();
-        
         $apiController  = app()->make('App\Http\Controllers\ApiController');
        
         try {
-            $user = $this->auth->authenticate($token);
-       
+
+            $user =  JWTAuth::parseToken()->authenticate();
+           
             if(!$user) {
                 return $apiController->respondUnauthorizedError([
                     'message' => 'Invalid Token'
                 ]);
             }
-            // $tokenInstance = UserToken::where(['token' => $token, 'user_id' => $user->id]);
-            // if (!$tokenInstance->count()) {
-            //     return $apiController->respondUnauthorizedError([
-            //         'message' => Config('messages.auth.invalid_request')
-            //     ]);
-            // }
         } catch (TokenExpiredException $e) {
             return $apiController->respondUnauthorizedError([
                 'message' =>'Auth Token expired'

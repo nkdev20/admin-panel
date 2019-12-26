@@ -17,4 +17,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/user/signup');
+Route::post('/user/signup', 'AuthController@register');
+Route::post('/user/login', 'AuthController@login');
+
+Route::post('/inventory', 'InventoryController@create')->middleware( 'custom_auth');
