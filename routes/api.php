@@ -22,13 +22,21 @@ Route::group(['prefix' => 'user'], function () {
     Route::post('/login', 'AuthController@login');
     Route::group(['middleware' => 'custom_auth'], function () {
         Route::post('/logout', 'AuthController@logout');
-        Route::group(['middleware' => 'custom_auth'], function () {
+        Route::group(['middleware' => 'role_middleware'], function () {
             Route::get('/', 'AuthController@index');
-            Route::get('/approve', 'AuthController@approveUser');
+            Route::put('/approve', 'AuthController@approveUser');
         });
     });
 });
 
+Route::group(['prefix' => 'inventory'], function () {
+    Route::group(['middleware' => 'custom_auth'], function () {
+        Route::group(['middleware' => 'inventory_middleware'], function () {
+            Route::post('/', 'InventoryController@create');
+            Route::put('/{id}', 'InventoryController@edit');
+            Route::delete('/{id}', 'InventoryController@delete');
+            Route::get('/', 'InventoryController@index');
+        });
 
-
-Route::post('/inventory', 'InventoryController@create')->middleware( 'custom_auth');
+    });
+});

@@ -21,7 +21,6 @@ class CreateInventoryTable extends Migration
             $table->string('batch_no', 100);
             $table->date('batch_date');
             $table->integer('quantity');
-            $table->tinyInteger('status')->defaut(0)->comment('0 => not approved, 1 => approved');
             $table->tinyInteger('is_active')->default(0);
 
 
