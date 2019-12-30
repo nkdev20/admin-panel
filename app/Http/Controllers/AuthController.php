@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\User;
+use App\UserToken;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,7 @@ class AuthController extends ApiController
     public function __construct()
     {
         $this->user = new User;
+        $this->userToken = new UserToken;
     }
 
     public function register(Request $request)
@@ -44,8 +46,54 @@ class AuthController extends ApiController
 
     }
 
+
+    public function index()
+    {
+
+        $users = $this->user->with( ['role' => function($q) {
+                               $q->select('roles.id', 'role'); 
+                            }])
+                            ->where('id', '<>', auth()->user()->id)
+                            ->get(['users.id', 'email', 'name', 'is_active'])->toArray();
+
+        return $this->respondWithData([
+            'data' => $users
+        ]);
+    }
+
+    public function approveUser($userId)
+    {
+        if(empty($userId)){
+            return $this->responseValidationBadRequest([
+                'message' => 'user id is required'
+            ]);
+        }
+
+        $this->user->update('store_manager_approved', 1)->where('user_id', $userId);
+
+        return $this->respondWithData([
+            'message' => 'user is approved'
+        ]);
+
+    }
+
+    public function logout()
+    {
+        $user  = auth()->user();
+
+        $this->userToken->where('user_id', $user->id)->update(['is_active' =>  0]);
+
+        JWTAuth::invalidate(JWTAuth::getToken());
+
+        return $this->respondWithData([
+            'message' => 'Logged out successfuly'
+        ]);
+
+    }
+
     public function login(Request $request)
     {
+
         $this->validate($request, [
             'email' => 'required|email',
             'password' => 'required'
@@ -58,8 +106,24 @@ class AuthController extends ApiController
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        return response()->json([
-            'token' => $token
+        $user = auth()->user();
+        $userRole = $user->role()->get()->pluck('role')->toArray();
+
+        $this->userToken->create([
+            'user_id' => $user->id,
+            'token' => $token,
+            'is_active' => 1
+        ]);
+     
+        $data = [
+            'username' => $user->name,
+            'token' => $token,
+            'is_approved' => $user->store_manager_approved,
+            'roles' => $userRole
+        ];
+
+        return $this->respondWithData([
+            'data' => $data 
         ]);
     }
 

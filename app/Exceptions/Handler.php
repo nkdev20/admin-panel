@@ -57,6 +57,7 @@ class Handler extends ExceptionHandler
             $status        = Responses::HTTP_BAD_REQUEST;
     
             $apiController = app()->make('App\Http\Controllers\ApiController');
+            dd($e->getMessage());
             if ($e instanceof ModelNotFoundException) {
                 $status = Responses::HTTP_NOT_FOUND;
             } elseif ($e instanceof AuthenticationException) {

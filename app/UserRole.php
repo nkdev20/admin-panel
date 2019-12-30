@@ -8,10 +8,12 @@ class UserRole extends Model
 {
     
     protected $guarded = [];
+    protected $hidden = ['pivot'];
 
 
-    // public function roles()
-    // {
-    //     $this->belongsToMany('App\Roles', 'roles_id');
-    // }
+    public function role()
+    {
+        $this->belongsTo('App\Role', 'role_id');
+    }
+
 }

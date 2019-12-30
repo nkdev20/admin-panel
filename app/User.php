@@ -25,7 +25,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password'
+        'password', 'pivot'
     ];
 
     /**
@@ -65,6 +65,11 @@ class User extends Authenticatable implements JWTSubject
     public function role()
     {
         return $this->belongsToMany('App\Role', 'user_roles');
+    }
+
+    public function userRole()
+    {
+        return $this->hasMany('App\UserRole', 'user_id');
     }
 
 }

@@ -17,7 +17,18 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/user/signup', 'AuthController@register');
-Route::post('/user/login', 'AuthController@login');
+Route::group(['prefix' => 'user'], function () {
+    Route::post('/signup', 'AuthController@register');
+    Route::post('/login', 'AuthController@login');
+    Route::group(['middleware' => 'custom_auth'], function () {
+        Route::post('/logout', 'AuthController@logout');
+        Route::group(['middleware' => 'custom_auth'], function () {
+            Route::get('/', 'AuthController@index');
+            Route::get('/approve', 'AuthController@approveUser');
+        });
+    });
+});
+
+
 
 Route::post('/inventory', 'InventoryController@create')->middleware( 'custom_auth');
